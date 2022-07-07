@@ -1,5 +1,5 @@
 {
-    "name": "cetera-study/plugin-turbo-pages",
+    "name": "cetera-labs/plugin-turbo-pages",
     "description": "Турбо-страницы для Яндекс.",
     "type": "cetera-cms-plugin",
     "license": "MIT",

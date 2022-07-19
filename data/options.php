@@ -63,7 +63,7 @@ function getList($from) {
         default:
     }
 
-    $list = \TurboPages\View::get($ids, $from);
+    $list = \TurboPages\Options::getView($ids, $from);
 
     echo json_encode($list);
 

@@ -21,7 +21,7 @@ class Export {
         
         $link = 'https://' . $catalog->fields['alias'];
         $title = $catalog->fields['meta_title'];
-        
+
         $tp->addChannel($link, $title);
 
     }
@@ -36,11 +36,24 @@ class Export {
 
     }
 
-    public static function export() {
+    private static function isValid(\Cetera\Material $material, Array $excludedMaterialIDs): bool {
 
-        $excludedmaterialIDs = \TurboPages\Options::getMaterialIDs();
+        switch (true) {
+            case in_array($material->id, $excludedMaterialIDs):
+                return false;
+            case $material->getType() != MATH_PUBLISHED:
+                return false;
+            default: 
+                return true;
+        }
+    }
+
+    public static function export() {
         
-        $catalogsCollection = \TurboPages\Catalogs::get();
+        $excludedMaterialIDs = \TurboPages\Options::getMaterialIDs();
+        $excludedCatalogIDs = \TurboPages\Options::getDirIDs();
+        
+        $catalogsCollection = \TurboPages\Catalogs::get($excludedCatalogIDs);
         $tp = new \TurboPages\TurboPager();
 
         foreach ($catalogsCollection as $catalogs) {
@@ -54,13 +67,8 @@ class Export {
                     $materials = $catalog->getMaterials();
 
                     foreach ($materials as $material) {
-                        switch (true) {
-                            case in_array($material->id, $excludedmaterialIDs):
-                                break;
-                            case $material->getType() != MATH_PUBLISHED:
-                                break;
-                            default:
-                                self::additem($tp, $material);
+                        if (self::isValid($material, $excludedMaterialIDs)) {
+                            self::additem($tp, $material);
                         }
                     }
 

@@ -4,44 +4,41 @@ namespace TurboPages;
 
 class Catalogs {
 
-    public static function get(): Array {
-        
-        $root = \Cetera\Catalog::getRoot();
+    public static function get(Array $excludedCatalogIDs): Array {
 
-        $servers = $root->getChildren();
-
-        $excludedCatalogs = \TurboPages\Options::getDirIDs();
+        $allCatalogs = new \Cetera\Iterator\Catalog\Catalog();
+        $allCatalogs->orderBy('b.lft', 'ASC');
 
         $catalogs = [];
+        
+        $serverIndex = -1;
+        foreach ($allCatalogs as $catalog) {
+            if ($catalog->isServer()) {
+                $catalogs[] = [$catalog];
+                $serverIndex++;
+            } else {
+                if (self::isValid($catalog, $excludedCatalogIDs)) {
+                    $catalogs[$serverIndex][] = $catalog;
+                }
+            }
 
-        foreach ($servers as $server) {
-            $catalogs[] = self::getSubCatalogs($server, $excludedCatalogs);
         }
-
+       
         return $catalogs;
 
     }
 
-    private static function getSubCatalogs(\Cetera\Catalog $catalog, Array $excludedCatalogs): Array {
+    private static function isValid(\Cetera\Catalog $catalog, Array $excludedCatalogIDs): bool {
 
-        switch (true) {
-            case in_array($catalog->id, $excludedCatalogs):
-                return [];
-            case $catalog->isLink():
-                return [];
-            case $catalog->isHidden():
-                return [];
+        $path = $catalog->getPath();
+
+        foreach ($path as $node) {
+            if (in_array($node->id, $excludedCatalogIDs)) {
+                return false;
+            }
         }
 
-        $subCatalogsLocal = $catalog->getChildren()->orderBy('b.lft', 'ASC');
-
-        $subCatalogs = [$catalog];
-
-        foreach ($subCatalogsLocal as $subCatalogLocal) {
-            $subCatalogs = [...$subCatalogs, ...self::getSubCatalogs($subCatalogLocal, $excludedCatalogs)];
-        }
-
-        return $subCatalogs;
-
+        return true;
     }
+
 }

@@ -6,26 +6,18 @@ class Export {
 
     use \Cetera\DbConnection;
 
-    private static function protocol() {
-        
-        return !empty($_SERVER['HTTPS']) && 'off' !== strtolower($_SERVER['HTTPS']) ? 'https://' : 'http://';
-
-    }
-
     private static function relink(String $link): String {
-
-        $result = str_replace('http://', self::protocol(), $link);
-        
+       
         //delete filename from path
-        $lastslash = strrpos($result, DIRECTORY_SEPARATOR);
-        $result = substr($result, 0, $lastslash + 1);
+        $lastslash = strrpos($link, DIRECTORY_SEPARATOR);
+        $result = substr($link, 0, $lastslash + 1);
 
         return $result;
     }
 
     private static function addChannel(\TurboPages\TurboPager $tp, \Cetera\Catalog $catalog) {
         
-        $link = self::protocol() . $catalog->fields['alias'];
+        $link = 'hhtp://' . $catalog->fields['alias'];
         $title = $catalog->fields['meta_title'];
 
         $tp->addChannel($link, $title);
@@ -40,19 +32,6 @@ class Export {
 
         $tp->addItem($link, $title, $content);
 
-    }
-
-    private static function isValidCatalog(\Cetera\Catalog $catalog, Array $excludedCatalogIDs): bool {
-        
-        $path = $catalog->getPath();
-
-        foreach ($path as $node) {
-            if (in_array($node->id, $excludedCatalogIDs)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private static function isValidMaterial(\Cetera\Material $material, Array $excludedMaterialIDs): bool {
@@ -79,26 +58,45 @@ class Export {
 
         $tp = new \TurboPages\TurboPager();
 
-        foreach ($allCatalogs as $catalog) {
+        while ($allCatalogs->valid()) {
 
+            $catalog = $allCatalogs->current();
+
+            if (in_array($catalog->id, $excludedCatalogIDs) || $catalog->isHidden()) {
+
+                $level = count($catalog->getPath());
+
+                //skip self
+                $allCatalogs->next();
+                $catalog = $allCatalogs->current();
+
+                //skip children
+                while ($level < count($catalog->getPath())) {
+                    $allCatalogs->next();
+                    $catalog = $allCatalogs->current();
+                }
+                
+                continue;
+
+            }
+            
             if ($catalog->isServer()) {        
                 self::addChannel($tp, $catalog);
+                $allCatalogs->next();
                 continue;
-            }    
+            }
                 
-            if (self::isValidCatalog($catalog, $excludedCatalogIDs)) {
+            $materials = $catalog->getMaterials();
+
+            foreach ($materials as $material) {
                 
-                $materials = $catalog->getMaterials();
-
-                foreach ($materials as $material) {
-                    
-                    if (self::isValidMaterial($material, $excludedMaterialIDs)) {
-                        self::addItem($tp, $material);
-                    }
-
+                if (self::isValidMaterial($material, $excludedMaterialIDs)) {
+                    self::addItem($tp, $material);
                 }
 
             }
+
+            $allCatalogs->next();
 
         }
 

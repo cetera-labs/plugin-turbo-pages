@@ -14,7 +14,7 @@ if ($filename && $filename !== '') {
     throw new \Exception('Filename is empty');
 }
 
-$error = \TurboPages\Export::export();
+$error = \TurboPages\Export::run();
 
 echo json_encode($error);
 

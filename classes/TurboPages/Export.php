@@ -68,7 +68,7 @@ class Export {
 
                     foreach ($materials as $material) {
                         if (self::isValid($material, $excludedMaterialIDs)) {
-                            self::additem($tp, $material);
+                            self::addItem($tp, $material);
                         }
                     }
 

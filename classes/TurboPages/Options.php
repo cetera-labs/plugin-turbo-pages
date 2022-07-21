@@ -6,32 +6,41 @@ class Options {
 
     use \Cetera\DbConnection;
 
-    private static function getFilenameDefault() {
+    private static function getFilenameDefault(): String {
         return 'turbo-default.xml';
     }
 
-    public static function getFilename() {
+    public static function getFilename(): String {
           return empty($valueCurrent) ? self::getFilenameDefault() : $valueCurrent;
     }
 
-    public function getDirIDs() {
+    public static function getDirIDs(): Array {
         return self::configGet('dirs') ?? [];
     }
 
-    public function getMaterialIDs() {
+    public static function getMaterialIDs(): Array {
         return self::configGet('materials') ?? [];
     }
 
-    public function setFilename(String $filename) {
+    public static function setFilename(String $filename) {
         self::configSet('filename', $filename);
     }
 
-    public function setDirIDs(Array $dir_ids) {
+    public static function setDirIDs(Array $dir_ids) {
         self::configSet('dirs', $dir_ids);
     }
 
-    public function setMaterialIDs(Array $material_ids) {
+    public static function setMaterialIDs(Array $material_ids) {
         self::configSet('materials', $material_ids);
+    }
+
+    public static function getAllCatalogs(): \Cetera\Iterator\Catalog\Catalog {
+        
+        $allCatalogs = new \Cetera\Iterator\Catalog\Catalog();
+        $allCatalogs->orderBy('b.lft', 'ASC');
+        
+        return $allCatalogs;
+
     }
 
     public static function getView(Array $ids, String $from) {

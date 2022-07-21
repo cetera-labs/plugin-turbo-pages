@@ -93,7 +93,7 @@ function getList(String $from) {
 
 }
 
-function setList(String $from, Array $newIDs) {
+function setList(String $from, String $newIDs) {
     $newIDs = json_decode($newIDs);
     switch ($from) {
         case 'dir_data':

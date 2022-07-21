@@ -41,7 +41,7 @@ switch ($action) {
 }
 die();
 
-function getFilename(): String {
+function getFilename() {
     $filename = \TurboPages\Options::getFilename();
 
     echo json_encode(array(
@@ -50,7 +50,7 @@ function getFilename(): String {
     ));
 }
 
-function setFilename($filename): String {
+function setFilename($filename) {
     $res = \TurboPages\Options::setFilename($filename);
     echo json_encode(array(
         'success' => true,
@@ -58,7 +58,7 @@ function setFilename($filename): String {
     ));
 }
 
-function getProtocol(): String {
+function getProtocol() {
     $protocol = \TurboPages\Options::getProtocol();
 
     echo json_encode(array(
@@ -67,7 +67,7 @@ function getProtocol(): String {
     ));
 }
 
-function setProtocol(bool $protocol): String {
+function setProtocol(bool $protocol) {
     $res = \TurboPages\Options::setProtocol($protocol);
     echo json_encode(array(
         'success' => true,
@@ -75,7 +75,7 @@ function setProtocol(bool $protocol): String {
     ));
 }
 
-function getList(String $from): String {
+function getList(String $from) {
 
     switch ($from) {
         case 'dir_data':

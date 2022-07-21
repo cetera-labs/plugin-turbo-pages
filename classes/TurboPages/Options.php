@@ -11,7 +11,12 @@ class Options {
     }
 
     public static function getFilename(): String {
-          return empty($valueCurrent) ? self::getFilenameDefault() : $valueCurrent;
+        $valueCurrent = self::configGet('filename');
+        return empty($valueCurrent) ? self::getFilenameDefault() : $valueCurrent;
+    }
+
+    public static function getProtocol(): bool {
+        return !self::configGet('protocol');
     }
 
     public static function getDirIDs(): Array {
@@ -24,6 +29,10 @@ class Options {
 
     public static function setFilename(String $filename) {
         self::configSet('filename', $filename);
+    }
+
+    public static function setProtocol(bool $protocol) {
+        self::configSet('protocol', !$protocol);
     }
 
     public static function setDirIDs(Array $dir_ids) {

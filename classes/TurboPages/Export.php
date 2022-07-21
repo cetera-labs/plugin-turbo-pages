@@ -10,6 +10,7 @@ class Export {
     private Array $excludedCatalogIDs;
     private Array $excludedMaterialIDs;
     private \Cetera\Iterator\Catalog\Catalog $allCatalogs;
+    private String $protocol;
 
     public function __construct() {
         
@@ -17,7 +18,8 @@ class Export {
         $this->excludedCatalogIDs = \TurboPages\Options::getDirIDs();
         $this->excludedMaterialIDs = \TurboPages\Options::getMaterialIDs();
         $this->allCatalogs = \TurboPages\Options::getAllCatalogs();
-
+        $this->protocol = \TurboPages\Options::getProtocol() ? 'https://' : 'http://';
+        
     }
 
     public function run() {
@@ -37,32 +39,25 @@ class Export {
 
     private function prepareData() {
 
-        do {
+        while ($this->allCatalogs->valid()) {
 
             $catalog = $this->allCatalogs->current();
 
             if (in_array($catalog->id, $this->excludedCatalogIDs) || $catalog->isHidden()) {
 
-                $level = $catalog->fields->level;
+                $level = $catalog->level;
 
-                //skip self
-                $this->allCatalogs->next();
-                $catalog = $this->allCatalogs->current();
-
-                //skip children
-                while ($level < $catalog->fields->level) {
+                do {
                     $this->allCatalogs->next();
                     $catalog = $this->allCatalogs->current();
-                }
+                } while ($level < $catalog->level);
                 
                 continue;
 
             }
             
             if ($catalog->isServer()) {        
-                $this->addChannel($catalog);
-                $this->allCatalogs->next();
-                continue;
+                $this->addChannel($catalog);                
             }
                 
             $materials = $catalog->getMaterials();
@@ -76,14 +71,14 @@ class Export {
             }
 
             $this->allCatalogs->next();
-
-        } while ($this->allCatalogs->valid());
+ 
+        }
 
     }
 
-    private static function relink(String $link): String {
+    private function relink(String $link): String {
 
-        $link =str_replace('http://', 'https://', $link);
+        $link =str_replace('http://', $this->protocol, $link);
        
         //delete filename from path
         $lastslash = strrpos($link, DIRECTORY_SEPARATOR);
@@ -94,7 +89,7 @@ class Export {
 
     private function addChannel(\Cetera\Catalog $catalog) {
         
-        $link = 'https://' . $catalog->fields['alias'];
+        $link = $this->protocol . $catalog->fields['alias'];
         $title = $catalog->fields['meta_title'];
 
         $this->tp->addChannel($link, $title);
@@ -103,7 +98,7 @@ class Export {
 
     private function addItem(\Cetera\Material $material) {
         
-        $link = self::relink($material->getFullUrl());
+        $link = $this->relink($material->getFullUrl());
         $title = htmlspecialchars($material->fields['name']);
         $content = htmlspecialchars($material->fields['text']);
 

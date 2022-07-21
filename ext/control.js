@@ -13,11 +13,14 @@ const eExport = Ext.create('Ext.Button', {
             eInput.setValue(filename);
         }
 
+        const protocol = Ext.getCmp('tp-protocol').getValue() ? '1' : '0';
+
         Ext.Ajax.request({
             url: '/plugins/turbo-pages/data/export.php',
             method: 'POST',
             params: {
-                param: filename
+                param: filename,
+                protocol: protocol
             },
             success: function(response, options){
                 console.log(response);
@@ -39,6 +42,34 @@ const eExport = Ext.create('Ext.Button', {
         });
     },
 });
+
+const protocolInit = (eInput) => {
+
+    Ext.Ajax.request({
+        url: '/plugins/turbo-pages/data/options.php',
+        method: 'POST',
+        params: {
+            action: 'getProtocol'
+        },
+        success: function(response, options){
+            const result = Ext.decode(response.responseText);
+            eInput.setValue(result.result);
+        },
+        failure: function(response, options){
+            alert(_('Ошибка: ') + response.statusText);
+        }
+    });
+}
+
+const eProtocol = {
+    xtype: 'checkbox',
+    id: 'tp-protocol',
+    boxLabel: 'https',
+    name: 'protocol',
+    initComponent: function () {
+        protocolInit(this);
+    },
+}
 
 const filenameInit = (eInput) => {
 
@@ -79,6 +110,8 @@ Ext.define('Plugin.turbo-pages.control', {
 
     items: [
         eExport,
+        '-',
+        eProtocol,
         '-',
         eFileName,]
 

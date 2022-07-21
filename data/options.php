@@ -9,13 +9,20 @@ include_once('common_bo.php');
 $action = $_REQUEST['action'];
 $from = $_REQUEST['from'];
 $param = $_REQUEST['param'] ?? null;
+$protocol = $_REQUEST['protocol'] ?? false;
 
 switch ($action) {
     case 'getFilename':
         getFilename();
         break;
     case 'setFilename':
-        setFileName($_REQUEST['param']);
+        setFileName($param);
+        break;
+    case 'getProtocol':
+        getProtocol();
+        break;
+    case 'setProtocol':
+        setProtocol($protocol);
         break;
     case 'getList':
         getList($from);
@@ -25,7 +32,7 @@ switch ($action) {
         break;
     case 'deleteID':
         deleteID($from, $param);
-        break;        
+        break;
     default:
         echo json_encode(array(
             'success' => false,
@@ -34,7 +41,7 @@ switch ($action) {
 }
 die();
 
-function getFilename() {
+function getFilename(): String {
     $filename = \TurboPages\Options::getFilename();
 
     echo json_encode(array(
@@ -43,7 +50,7 @@ function getFilename() {
     ));
 }
 
-function setFilename($filename) {
+function setFilename($filename): String {
     $res = \TurboPages\Options::setFilename($filename);
     echo json_encode(array(
         'success' => true,
@@ -51,7 +58,24 @@ function setFilename($filename) {
     ));
 }
 
-function getList($from) {
+function getProtocol(): String {
+    $protocol = \TurboPages\Options::getProtocol();
+
+    echo json_encode(array(
+        'success' => true,
+        'result' => $protocol
+    ));
+}
+
+function setProtocol(bool $protocol): String {
+    $res = \TurboPages\Options::setProtocol($protocol);
+    echo json_encode(array(
+        'success' => true,
+        'result' => $res
+    ));
+}
+
+function getList(String $from): String {
 
     switch ($from) {
         case 'dir_data':
@@ -69,7 +93,7 @@ function getList($from) {
 
 }
 
-function setList($from, $newIDs) {
+function setList(String $from, Array $newIDs) {
     $newIDs = json_decode($newIDs);
     switch ($from) {
         case 'dir_data':
@@ -86,7 +110,7 @@ function setList($from, $newIDs) {
     }
 }
 
-function deleteID($from, $id) {
+function deleteID(String $from, int $id) {
     switch ($from) {
         case 'dir_data':
             $ids = \TurboPages\Options::getDirIDs();

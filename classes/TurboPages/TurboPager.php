@@ -22,7 +22,7 @@ class TurboPager implements \Stringable {
         $dom = dom_import_simplexml($this->content)->ownerDocument;
         $dom->formatOutput = true;
 
-        return html_entity_decode($dom->saveXML());
+        return $dom->saveXML();
 
     }
 

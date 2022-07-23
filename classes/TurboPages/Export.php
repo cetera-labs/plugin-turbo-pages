@@ -100,7 +100,7 @@ class Export {
         
         $link = $this->relink($material->getFullUrl());
         $title = htmlspecialchars($material->fields['name']);
-        $content = htmlspecialchars($material->fields['text']);
+        $content = $material->fields['text'];
 
         $this->tp->addItem($link, $title, $content);
 

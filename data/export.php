@@ -6,19 +6,20 @@
 
 include_once('common_bo.php');
 
-$filename = $_REQUEST['param'] ?? false;
-$protocol = (bool) $_REQUEST['protocol'];
+$filename = $_REQUEST['param'] ?? \TurboPages\Options::getFilename();
+$protocol = (bool) ($_REQUEST['protocol'] ?? \TurboPages\Options::getProtocol());
 
-if ($filename && $filename !== '') {
-    \TurboPages\Options::setFilename($filename);
-} else {
-    throw new \Exception('Filename is empty');
+switch (true) {
+    case empty($filename):
+        $error = 'Filename is empty';
+        break;
+    default:
+        \TurboPages\Options::setFilename($filename);
+        \TurboPages\Options::setProtocol($protocol);
+        
+        $export = new \TurboPages\Export();
+        $error = $export->run();
 }
-
-\TurboPages\Options::setProtocol($protocol);
-
-$export = new \TurboPages\Export();
-$error = $export->run();
 
 echo json_encode($error);
 

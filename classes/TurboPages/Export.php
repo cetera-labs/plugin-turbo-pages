@@ -79,12 +79,14 @@ class Export {
     private function relink(String $link): String {
 
         $link =str_replace('http://', $this->protocol, $link);
-       
-        //delete filename from path
-        $lastslash = strrpos($link, DIRECTORY_SEPARATOR);
-        $result = substr($link, 0, $lastslash + 1);
 
-        return $result;
+        $index = 'index';
+        $len = strlen($index);
+        if (str_ends_with($link, $index)) {
+            $link = substr($link, 0, strlen($link) - $len);
+        }
+
+        return $link;
     }
 
     private function addChannel(\Cetera\Catalog $catalog) {

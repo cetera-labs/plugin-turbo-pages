@@ -6,15 +6,16 @@ class Export {
 
     use \Cetera\DbConnection;
 
-    private TurboPager $tp;
+    // private TurboPager $tp;
     private Array $excludedCatalogIDs;
     private Array $excludedMaterialIDs;
     private \Cetera\Iterator\Catalog\Catalog $allCatalogs;
     private String $protocol;
+    private Array $servers;
+    private String $currentServer;
 
     public function __construct() {
         
-        $this->tp = new \TurboPages\TurboPager();
         $this->excludedCatalogIDs = \TurboPages\Options::getDirIDs();
         $this->excludedMaterialIDs = \TurboPages\Options::getMaterialIDs();
         $this->allCatalogs = \TurboPages\Options::getAllCatalogs();
@@ -26,13 +27,18 @@ class Export {
         
         try {
             $this->prepareData();
-            $filename = \TurboPages\Options::getFilename();
-            file_put_contents(DOCROOT . $filename, $this->tp);
-            $error = false;
+
+            foreach ($this->servers as $server => $tp) {
+             
+                $filename = \TurboPages\Options::getFilename() . $server . '.xml';;
+                file_put_contents(DOCROOT . $filename, $tp);
+            }
+
+            $status = ['error' => false, 'message' => count($this->servers)];
         } catch (\Throwable $e) {
-            $error = $e->getMessage();
+            $status = ['error' => true, 'message' => $e->getMessage()];
         } finally {
-            return $error;
+            return $status;
         }
 
     }
@@ -56,15 +62,19 @@ class Export {
 
             }
             
-            if ($catalog->isServer()) {        
-                $this->addChannel($catalog);                
+            if ($catalog->isServer()) {
+
+                $this->addChannel($catalog);
+
             }
                 
             $materials = $catalog->getMaterials();
 
+
             foreach ($materials as $material) {
                 
                 if (!in_array($material->id, $this->excludedMaterialIDs) && $material->getType() == MATH_PUBLISHED) {
+
                     $this->addItem($material);
                 }
 
@@ -73,6 +83,7 @@ class Export {
             $this->allCatalogs->next();
  
         }
+        
 
     }
 
@@ -90,21 +101,24 @@ class Export {
     }
 
     private function addChannel(\Cetera\Catalog $catalog) {
-        
+
+        $this->currentServer = $catalog->fields['alias'];
+
+        $tp = new \TurboPages\TurboPager();
+
         $link = $this->protocol . $catalog->fields['alias'];
         $title = $catalog->fields['meta_title'];
-
-        $this->tp->addChannel($link, $title);
+        $tp->addChannel($link, $title);
+        $this->servers[$this->currentServer] = $tp;
 
     }
 
     private function addItem(\Cetera\Material $material) {
-        
+
         $link = $this->relink($material->getFullUrl());
         $title = htmlspecialchars($material->fields['name']);
-        $content = $material->fields['text'] ?? '';
-
-        $this->tp->addItem($link, $title, $content);
+        $content = $material->fields['text'] ?? '';                  
+        $this->servers[$this->currentServer]->additem($link, $title, $content);
 
     }
 

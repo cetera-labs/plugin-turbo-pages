@@ -24,11 +24,11 @@ const eExport = Ext.create('Ext.Button', {
             },
             success: function(response, options){
                 console.log(response);
-                const error = Ext.decode(response.responseText);
-                result = error ? _('с ошибкой') : _('успешно');
+                const status = Ext.decode(response.responseText);
+                result = status.error ? _('с ошибкой') : _('успешно');
                 title = _('Выгрузка завершена ') + result;
-                message = error ? error : filename;
-                icon = error ? Ext.MessageBox.WARNING : Ext.MessageBox.INFO;
+                message = status.error ? status.message : _('Выгружено файлов: ') + status.message;
+                icon = status.error ? Ext.MessageBox.WARNING : Ext.MessageBox.INFO;
                 Ext.Msg.show({  
                     title: title,
                     msg: message + '<br/>' + '<br/>',
@@ -94,10 +94,12 @@ const eFileName = {
     xtype: 'textfield',
     id: 'tp-filename',
     name: 'filename',
-    fieldLabel: _('Файл экспорта'),
+    fieldLabel: _('Префикс файлов экспорта'),
+    labelWidth: '180px',
+    labelAlign: 'right',
     allowBlank: false,
-    value: 'turbo-default.xml',
-    valueDefalult: 'turbo-default.xml',
+    value: 'turbo-',
+    valueDefalult: 'turbo-',
     flex: 1,
     initComponent: function () {
         filenameInit(this);

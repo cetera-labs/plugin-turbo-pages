@@ -116,7 +116,11 @@ class Export {
     private function addItem(\Cetera\Material $material) {
 
         $link = $this->relink($material->getFullUrl());
-        $title = htmlspecialchars($material->fields['name']);
+        $title = trim(htmlspecialchars($material->fields['name']));
+        if ($title === '') {
+            $title = htmlspecialchars($material->alias);
+        }
+        
         $content = $material->fields['text'] ?? '';                  
         $this->servers[$this->currentServer]->additem($link, $title, $content);
 

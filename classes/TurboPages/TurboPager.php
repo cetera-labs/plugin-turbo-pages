@@ -29,6 +29,7 @@ class TurboPager implements \Stringable {
     public function addChannel(String $link, String $title) {
         
         $this->channel = $this->content->addChild('channel');
+        $this->channel->addChild('turbo:turbo:cms_plugin', '2398A0EA1BA32FD47C52DD4B85BEA215');
         $this->channel->addChild('link', $link);
         $this->channel->addChild('title', $title);
 

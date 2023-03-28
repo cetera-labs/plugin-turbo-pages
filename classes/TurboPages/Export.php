@@ -68,16 +68,15 @@ class Export {
 
             }
                 
-            $materials = $catalog->getMaterials();
+            if ($catalog->materialsObjectDefinition) {
+                foreach ($catalog->getMaterials() as $material) {
 
+                    if (!in_array($material->id, $this->excludedMaterialIDs) && $material->getType() == MATH_PUBLISHED) {
 
-            foreach ($materials as $material) {
-                
-                if (!in_array($material->id, $this->excludedMaterialIDs) && $material->getType() == MATH_PUBLISHED) {
+                        $this->addItem($material);
+                    }
 
-                    $this->addItem($material);
                 }
-
             }
 
             $this->allCatalogs->next();
